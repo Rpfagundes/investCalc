@@ -1,11 +1,21 @@
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+scroll-behavior: smooth;
+}
+
 body {
   min-height: 100vh;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
 }
 
 .container {
-  max-width: 800px;
+  max-width: 600px;
+  width: 100%;
   padding: 16px;
   font-family: Arial, sans-serif;
 }
@@ -52,4 +62,125 @@ body {
   padding: 10px;
   background: white;
   border-radius: 4px;
+}
+
+.percentuais-mensais {
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.percentuais-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.percentuais-list th,
+.percentuais-list td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.percentuais-list th {
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+}
+
+.percentuais-list tr:hover {
+    background-color: #f5f5f5;
+}
+
+.percentuais-list tr.new-year {
+    border-top: 2px solid #999;
+}
+
+.percentuais-list tr.new-year td {
+    padding-top: 16px;
+}
+
+.percentuais-list tr:not(.new-year) td:first-child {
+    color: transparent;  /* Esconde o número do ano quando se repete */
+}
+
+.percentuais-list td:first-child {
+    width: 50px;
+}
+
+.percentuais-list td:nth-child(2) {
+    width: 50px;
+}
+
+.percentuais-list td:nth-child(3),
+.percentuais-list td:nth-child(4) {
+    width: calc((100% - 100px) / 2);
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    padding: 16px;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.tab-button.active {
+    background: #007bff;
+    color: white;
+}
+
+.evolucao-emprestimo {
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.evolucao-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.evolucao-list th,
+.evolucao-list td {
+    padding: 8px;
+    text-align: right;
+    border-bottom: 1px solid #ddd;
+}
+
+.evolucao-list th {
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+    text-align: center;
+}
+
+.evolucao-list tr:hover {
+    background-color: #f5f5f5;
+}
+
+.evolucao-list td:first-child {
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+@media (max-width: 767px) {
+  body {
+    min-height: auto;
+  }
 }

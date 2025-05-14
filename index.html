@@ -6,7 +6,12 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <div class="tabs">
+        <button class="tab-button active" data-tab="investimentos">Investimentos</button>
+        <button class="tab-button" data-tab="emprestimo">Empréstimo</button>
+    </div>
+    
+    <div class="container tab-content" id="investimentos">
         <h1>Calculadora de Investimentos</h1>
         <div class="form-container">
             <div class="input-group">
@@ -19,11 +24,11 @@
             </div>
             <div class="input-group">
                 <label for="anosTrab">Anos Trabalhados</label>
-                <input type="number" id="anosTrab" value="4" required>
+                <input type="number" id="anosTrab" value="3" required>
             </div>
             <div class="input-group">
                 <label for="invMens">Investimento Mensal (R$)</label>
-                <input type="number" id="invMens" step="1000" value="5000" required>
+                <input type="number" id="invMens" step="1000" value="12000" required>
             </div>
             <div class="input-group">
                 <label for="diasTrab">Dias Trabalhados por mes</label>
@@ -35,11 +40,11 @@
           </div>
             <div class="input-group">
                 <label for="valorComido">Valor Consumido do Investimento Após Apocalipse (R$)</label>
-                <input type="number" id="valorComido" step="1000" value="4200" required>
+                <input type="number" id="valorComido" step="1000" value="0" required>
             </div>
             <div class="input-group">
                 <label for="anosDpsTrab">Anos Após Trabalho</label>
-                <input type="number" id="anosDpsTrab" value="12" required>
+                <input type="number" id="anosDpsTrab" value="0" required>
             </div>
         </div>
         <div class="results">
@@ -54,6 +59,57 @@
             <div class="result-item">
                 <span>Trabalho por Dia:</span>
                 <span id="trabDia">USD 0,00</span>
+            </div>
+
+            <h3>Percentual de Influência por Mês</h3>
+            <div class="percentuais-mensais">
+                <div id="percentuaisList" class="percentuais-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container tab-content" id="emprestimo" style="display: none;">
+        <h1>Calculadora de Empréstimo</h1>
+        <div class="form-container">
+            <div class="input-group">
+                <label for="valorEmprestimo">Valor do Empréstimo (R$)</label>
+                <input type="number" id="valorEmprestimo" step="1000" value="100000" required>
+            </div>
+            <div class="input-group">
+                <label for="prazoMeses">Prazo (meses)</label>
+                <input type="number" id="prazoMeses" value="36" required>
+            </div>
+            <div class="input-group">
+                <label for="taxaMensal">Taxa de Juros Mensal (%)</label>
+                <input type="number" id="taxaMensal" step="0.01" value="1" required>
+            </div>
+            <div class="input-group">
+                <label for="amortizacaoExtra">Amortização Extra Mensal (R$)</label>
+                <input type="number" id="amortizacaoExtra" step="100" value="0" required>
+            </div>
+        </div>
+
+        <div class="results">
+            <div class="result-item">
+                <span>Parcela Mensal Padrão:</span>
+                <span id="parcelaMensal">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+                <span>Total de Juros (sem amortização):</span>
+                <span id="totalJuros">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+                <span>Total de Juros (com amortização):</span>
+                <span id="totalJurosAmort">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+                <span>Tempo para Quitação:</span>
+                <span id="tempoQuitacao">0 meses</span>
+            </div>
+
+            <h3>Evolução do Saldo Devedor</h3>
+            <div class="evolucao-emprestimo">
+                <div id="evolucaoList" class="evolucao-list"></div>
             </div>
         </div>
     </div>
