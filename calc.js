@@ -169,7 +169,7 @@ class CalculadoraEmprestimo {
             valorEmprestimo: document.getElementById('valorEmprestimo'),
             prazoMeses: document.getElementById('prazoMeses'),
             taxaMensal: document.getElementById('taxaMensal'),
-            amortizacaoExtra: document.getElementById('amortizacaoExtra')
+            amortizacao: document.getElementById('amortizacao')
         };
 
         this.outputs = {
@@ -280,7 +280,7 @@ class CalculadoraEmprestimo {
             valorEmprestimo: parseFloat(this.inputs.valorEmprestimo.value) || 0,
             prazoMeses: parseInt(this.inputs.prazoMeses.value) || 0,
             taxaMensal: parseFloat(this.inputs.taxaMensal.value) || 0,
-            amortizacaoExtra: parseFloat(this.inputs.amortizacaoExtra.value) || 0
+            amortizacao: parseFloat(this.inputs.amortizacao.value) || 0
         };
 
         const resultadoSemAmort = this.calcularEvolucaoPrice(
@@ -294,7 +294,7 @@ class CalculadoraEmprestimo {
             valores.valorEmprestimo,
             valores.prazoMeses,
             valores.taxaMensal,
-            valores.amortizacaoExtra
+            valores.amortizacao
         );
 
         this.outputs.parcelaMensal.textContent = this.formatarMoeda(resultadoSemAmort.parcelaPadrao);
