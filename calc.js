@@ -166,25 +166,62 @@ class CalculadoraEmprestimo {
 
     initializeElements() {
         this.inputs = {
+            tipoEmprestimo: document.getElementById('tipoEmprestimo'),
             valorEmprestimo: document.getElementById('valorEmprestimo'),
+            // Price inputs
             prazoMeses: document.getElementById('prazoMeses'),
             taxaMensal: document.getElementById('taxaMensal'),
-            amortizacao: document.getElementById('amortizacao')
+            amortizacaoExtra: document.getElementById('amortizacaoExtra'),
+            // Bullet inputs
+            prazoAnos: document.getElementById('prazoAnos'),
+            taxaAnual: document.getElementById('taxaAnual'),
+            frequenciaPagamento: document.getElementById('frequenciaPagamento')
         };
 
         this.outputs = {
+            // Price outputs
             parcelaMensal: document.getElementById('parcelaMensal'),
             totalJuros: document.getElementById('totalJuros'),
             totalJurosAmort: document.getElementById('totalJurosAmort'),
             tempoQuitacao: document.getElementById('tempoQuitacao'),
-            evolucaoList: document.getElementById('evolucaoList')
+            evolucaoList: document.getElementById('evolucaoList'),
+            // Bullet outputs
+            jurosPeriodo: document.getElementById('jurosPeriodo'),
+            totalJurosBullet: document.getElementById('totalJurosBullet'),
+            principalBullet: document.getElementById('principalBullet'),
+            totalGeralBullet: document.getElementById('totalGeralBullet'),
+            fluxoPagamentosList: document.getElementById('fluxoPagamentosList')
+        };
+
+        // Elements containers
+        this.containers = {
+            camposPrice: document.getElementById('campos-price'),
+            camposBullet: document.getElementById('campos-bullet'),
+            resultsPrice: document.getElementById('results-price'),
+            resultsBullet: document.getElementById('results-bullet')
         };
     }
 
     addEventListeners() {
-        Object.values(this.inputs).forEach(input => {
-            input.addEventListener('input', () => this.calcular());
+        this.inputs.tipoEmprestimo.addEventListener('change', () => {
+            this.alternarTipoEmprestimo();
+            this.calcular();
         });
+
+        Object.values(this.inputs).forEach(input => {
+            if (input !== this.inputs.tipoEmprestimo) {
+                input.addEventListener('input', () => this.calcular());
+            }
+        });
+    }
+
+    alternarTipoEmprestimo() {
+        const isBullet = this.inputs.tipoEmprestimo.value === 'bullet';
+        
+        this.containers.camposPrice.style.display = isBullet ? 'none' : 'block';
+        this.containers.camposBullet.style.display = isBullet ? 'block' : 'none';
+        this.containers.resultsPrice.style.display = isBullet ? 'none' : 'block';
+        this.containers.resultsBullet.style.display = isBullet ? 'block' : 'none';
     }
 
     calcularParcela(valor, prazo, taxa) {
@@ -238,6 +275,91 @@ class CalculadoraEmprestimo {
         };
     }
 
+    calcularBullet() {
+        const valores = {
+            valorEmprestimo: parseFloat(this.inputs.valorEmprestimo.value) || 0,
+            prazoAnos: parseInt(this.inputs.prazoAnos.value) || 0,
+            taxaAnual: parseFloat(this.inputs.taxaAnual.value) || 0,
+            frequenciaPagamento: this.inputs.frequenciaPagamento.value
+        };
+
+        const taxaPeriodo = valores.taxaAnual / 100;
+        const jurosPeriodo = valores.valorEmprestimo * taxaPeriodo;
+        const periodosPorAno = valores.frequenciaPagamento === 'mensal' ? 12 : 1;
+        const totalPeriodos = valores.prazoAnos * periodosPorAno;
+        const jurosPorPeriodo = jurosPeriodo / periodosPorAno;
+        const totalJuros = jurosPeriodo * valores.prazoAnos;
+
+        this.outputs.jurosPeriodo.textContent = this.formatarMoeda(jurosPorPeriodo);
+        this.outputs.totalJurosBullet.textContent = this.formatarMoeda(totalJuros);
+        this.outputs.principalBullet.textContent = this.formatarMoeda(valores.valorEmprestimo);
+        this.outputs.totalGeralBullet.textContent = this.formatarMoeda(valores.valorEmprestimo + totalJuros);
+
+        this.atualizarTabelaFluxoPagamentos(valores, jurosPorPeriodo, totalPeriodos);
+    }
+
+    atualizarTabelaFluxoPagamentos(valores, jurosPorPeriodo, totalPeriodos) {
+        const table = document.createElement('table');
+        table.innerHTML = `
+            <tr>
+                <th>Período</th>
+                <th>Juros</th>
+                <th>Principal</th>
+                <th>Total</th>
+            </tr>
+        `;
+
+        for (let i = 1; i <= totalPeriodos; i++) {
+            const row = document.createElement('tr');
+            const isPeriodoFinal = i === totalPeriodos;
+            
+            row.innerHTML = `
+                <td>${i}º</td>
+                <td>${this.formatarMoeda(jurosPorPeriodo)}</td>
+                <td>${this.formatarMoeda(isPeriodoFinal ? valores.valorEmprestimo : 0)}</td>
+                <td>${this.formatarMoeda(isPeriodoFinal ? valores.valorEmprestimo + jurosPorPeriodo : jurosPorPeriodo)}</td>
+            `;
+            table.appendChild(row);
+        }
+
+        this.outputs.fluxoPagamentosList.innerHTML = '';
+        this.outputs.fluxoPagamentosList.appendChild(table);
+    }
+
+    calcular() {
+        if (this.inputs.tipoEmprestimo.value === 'bullet') {
+            this.calcularBullet();
+        } else {
+            const valores = {
+                valorEmprestimo: parseFloat(this.inputs.valorEmprestimo.value) || 0,
+                prazoMeses: parseInt(this.inputs.prazoMeses.value) || 0,
+                taxaMensal: parseFloat(this.inputs.taxaMensal.value) || 0,
+                amortizacaoExtra: parseFloat(this.inputs.amortizacaoExtra.value) || 0
+            };
+
+            const resultadoSemAmort = this.calcularEvolucaoPrice(
+                valores.valorEmprestimo,
+                valores.prazoMeses,
+                valores.taxaMensal,
+                0
+            );
+
+            const resultadoComAmort = this.calcularEvolucaoPrice(
+                valores.valorEmprestimo,
+                valores.prazoMeses,
+                valores.taxaMensal,
+                valores.amortizacaoExtra
+            );
+
+            this.outputs.parcelaMensal.textContent = this.formatarMoeda(resultadoSemAmort.parcelaPadrao);
+            this.outputs.totalJuros.textContent = this.formatarMoeda(resultadoSemAmort.totalJuros);
+            this.outputs.totalJurosAmort.textContent = this.formatarMoeda(resultadoComAmort.totalJuros);
+            this.outputs.tempoQuitacao.textContent = `${resultadoComAmort.mesesRestantes} meses`;
+
+            this.atualizarTabelaEvolucao(resultadoComAmort.evolucao);
+        }
+    }
+
     formatarMoeda(valor) {
         return valor.toLocaleString('pt-BR', {
             style: 'currency',
@@ -273,36 +395,6 @@ class CalculadoraEmprestimo {
 
         this.outputs.evolucaoList.innerHTML = '';
         this.outputs.evolucaoList.appendChild(table);
-    }
-
-    calcular() {
-        const valores = {
-            valorEmprestimo: parseFloat(this.inputs.valorEmprestimo.value) || 0,
-            prazoMeses: parseInt(this.inputs.prazoMeses.value) || 0,
-            taxaMensal: parseFloat(this.inputs.taxaMensal.value) || 0,
-            amortizacao: parseFloat(this.inputs.amortizacao.value) || 0
-        };
-
-        const resultadoSemAmort = this.calcularEvolucaoPrice(
-            valores.valorEmprestimo,
-            valores.prazoMeses,
-            valores.taxaMensal,
-            0
-        );
-
-        const resultadoComAmort = this.calcularEvolucaoPrice(
-            valores.valorEmprestimo,
-            valores.prazoMeses,
-            valores.taxaMensal,
-            valores.amortizacao
-        );
-
-        this.outputs.parcelaMensal.textContent = this.formatarMoeda(resultadoSemAmort.parcelaPadrao);
-        this.outputs.totalJuros.textContent = this.formatarMoeda(resultadoSemAmort.totalJuros);
-        this.outputs.totalJurosAmort.textContent = this.formatarMoeda(resultadoComAmort.totalJuros);
-        this.outputs.tempoQuitacao.textContent = `${resultadoComAmort.mesesRestantes} meses`;
-
-        this.atualizarTabelaEvolucao(resultadoComAmort.evolucao);
     }
 }
 

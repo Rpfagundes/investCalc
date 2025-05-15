@@ -17,6 +17,10 @@ h3 {
   margin-top: 30px;
 }
 
+select {
+
+}
+
 .container {
   max-width: 600px;
   width: 100%;
@@ -41,7 +45,7 @@ h3 {
   font-weight: bold;
 }
 
-.input-group input[type="number"] {
+.input-group input, .input-group select {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -105,7 +109,7 @@ h3 {
 }
 
 .percentuais-list tr:not(.new-year) td:first-child {
-    color: transparent;  /* Esconde o número do ano quando se repete */
+    color: transparent;
 }
 
 .percentuais-list td:first-child {

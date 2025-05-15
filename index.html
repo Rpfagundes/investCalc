@@ -72,24 +72,55 @@
         <h1>Calculadora de Empréstimo</h1>
         <div class="form-container">
             <div class="input-group">
+                <label for="tipoEmprestimo">Tipo de Empréstimo</label>
+                <select id="tipoEmprestimo">
+                    <option value="price">Price (parcelas fixas)</option>
+                    <option value="bullet">Bullet (amortização única)</option>
+                </select>
+            </div>
+            <div class="input-group">
                 <label for="valorEmprestimo">Valor do Empréstimo (R$)</label>
                 <input type="number" id="valorEmprestimo" step="1000" value="100000" required>
             </div>
-            <div class="input-group">
-                <label for="prazoMeses">Prazo (meses)</label>
-                <input type="number" id="prazoMeses" value="36" required>
+
+            <!-- Campos específicos do Price -->
+            <div id="campos-price">
+                <div class="input-group">
+                    <label for="prazoMeses">Prazo (meses)</label>
+                    <input type="number" id="prazoMeses" value="36" required>
+                </div>
+                <div class="input-group">
+                    <label for="taxaMensal">Taxa de Juros Mensal (%)</label>
+                    <input type="number" id="taxaMensal" step="0.01" value="1" required>
+                </div>
+                <div class="input-group">
+                    <label for="amortizacaoExtra">Amortização Extra Mensal (R$)</label>
+                    <input type="number" id="amortizacaoExtra" step="100" value="0" required>
+                </div>
             </div>
-            <div class="input-group">
-                <label for="taxaMensal">Taxa de Juros Mensal (%)</label>
-                <input type="number" id="taxaMensal" step="0.01" value="1" required>
-            </div>
-            <div class="input-group">
-                <label for="amortizacao">Amortização Mensal (R$)</label>
-                <input type="number" id="amortizacao" step="100" value="0" required>
+
+            <!-- Campos específicos do Bullet -->
+            <div id="campos-bullet" style="display: none;">
+                <div class="input-group">
+                    <label for="prazoAnos">Prazo (anos)</label>
+                    <input type="number" id="prazoAnos" value="3" required>
+                </div>
+                <div class="input-group">
+                    <label for="taxaAnual">Taxa de Juros Anual (%)</label>
+                    <input type="number" id="taxaAnual" step="0.01" value="12" required>
+                </div>
+                <div class="input-group">
+                    <label for="frequenciaPagamento">Frequência de Pagamento dos Juros</label>
+                    <select id="frequenciaPagamento">
+                        <option value="mensal">Mensal</option>
+                        <option value="anual">Anual</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div class="results">
+        <!-- Resultados do Price -->
+        <div class="results" id="results-price">
             <div class="result-item">
                 <span>Parcela Mensal Padrão:</span>
                 <span id="parcelaMensal">R$ 0,00</span>
@@ -110,6 +141,31 @@
             <h3>Evolução do Saldo Devedor</h3>
             <div class="evolucao-emprestimo">
                 <div id="evolucaoList" class="evolucao-list"></div>
+            </div>
+        </div>
+
+        <!-- Resultados do Bullet -->
+        <div class="results" id="results-bullet" style="display: none;">
+            <div class="result-item">
+                <span>Juros por Período:</span>
+                <span id="jurosPeriodo">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+                <span>Total de Juros:</span>
+                <span id="totalJurosBullet">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+                <span>Principal a ser Pago:</span>
+                <span id="principalBullet">R$ 0,00</span>
+            </div>
+            <div class="result-item">
+                <span>Total Geral:</span>
+                <span id="totalGeralBullet">R$ 0,00</span>
+            </div>
+
+            <h3>Fluxo de Pagamentos</h3>
+            <div class="evolucao-emprestimo">
+                <div id="fluxoPagamentosList" class="evolucao-list"></div>
             </div>
         </div>
     </div>
