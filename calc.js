@@ -218,8 +218,8 @@ class CalculadoraEmprestimo {
     alternarTipoEmprestimo() {
         const isBullet = this.inputs.tipoEmprestimo.value === 'bullet';
         
-        this.containers.camposPrice.style.display = isBullet ? 'none' : 'block';
-        this.containers.camposBullet.style.display = isBullet ? 'block' : 'none';
+        this.containers.camposPrice.style.display = isBullet ? 'none' : 'flex';
+        this.containers.camposBullet.style.display = isBullet ? 'flex' : 'none';
         this.containers.resultsPrice.style.display = isBullet ? 'none' : 'block';
         this.containers.resultsBullet.style.display = isBullet ? 'block' : 'none';
     }
