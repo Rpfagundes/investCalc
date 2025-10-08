@@ -137,8 +137,8 @@ class CalculadoraInvestimentos {
       );
 
       const trabDia = valores.claudia ? 
-          ((7000 - 5000 + valores.invMens)/(0.8*6))/valores.diasTrab :
-          ((7000 + valores.invMens)/(0.8*6))/valores.diasTrab;
+          ((7000 - 5000 + valores.invMens)/(0.8*5))/valores.diasTrab :
+          ((7000 + valores.invMens)/(0.8*5))/valores.diasTrab;
 
       const percentuaisMensais = this.calcularInfluenciaMensal(
           valores.invIni,
@@ -425,4 +425,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Calcula valores iniciais
     calculadoraInv.calcular();
     calculadoraEmp.calcular();
+
 });
