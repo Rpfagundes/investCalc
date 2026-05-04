@@ -1,161 +1,339 @@
 class CalculadoraInvestimentos {
-  constructor() {
-      this.initializeElements();
-      this.addEventListeners();
-  }
+    constructor() {
+        this.initializeElements();
+        this.addEventListeners();
+    }
 
-  initializeElements() {
-      this.inputs = {
-          percAnual: document.getElementById('percAnual'),
-          invIni: document.getElementById('invIni'),
-          anosTrab: document.getElementById('anosTrab'),
-          invMens: document.getElementById('invMens'),
-          valorComido: document.getElementById('valorComido'),
-          anosDpsTrab: document.getElementById('anosDpsTrab'),
-          claudia: document.getElementById('claudia'),
-          diasTrab: document.getElementById('diasTrab')
-          
-      };
+    initializeElements() {
+        this.inputs = {
+            percAnual:   document.getElementById('percAnual'),
+            invIni:      document.getElementById('invIni'),
+            anosTrab:    document.getElementById('anosTrab'),
+            invMens:     document.getElementById('invMens'),
+            valorComido: document.getElementById('valorComido'),
+            anosDpsTrab: document.getElementById('anosDpsTrab'),
+            claudia:     document.getElementById('claudia'),
+            diasTrab:    document.getElementById('diasTrab'),
+        };
 
-      this.outputs = {
-          montanteIdeal: document.getElementById('montanteIdeal'),
-          montanteApoc: document.getElementById('montanteApoc'),
-          trabDia: document.getElementById('trabDia'),
-          influenciaInvMensal: document.getElementById('influenciaInvMensal')
-      };
-  }
+        this.outputs = {
+            montanteIdeal:    document.getElementById('montanteIdeal'),
+            montanteApoc:     document.getElementById('montanteApoc'),
+            trabDia:          document.getElementById('trabDia'),
+            // sweetspot
+            sweetspotMes:     document.getElementById('sweetspotMes'),
+            sweetspotMontante: document.getElementById('sweetspotMontante'),
+            sweetspotRendimento: document.getElementById('sweetspotRendimento'),
+            sweetspotTotalInv: document.getElementById('sweetspotTotalInv'),
+            // comparison
+            cenarioAMontante: document.getElementById('cenarioAMontante'),
+            cenarioATotalInv: document.getElementById('cenarioATotalInv'),
+            cenarioAJuros:    document.getElementById('cenarioAJuros'),
+            cenarioAMultiplo: document.getElementById('cenarioAMultiplo'),
+            cenarioBMontante: document.getElementById('cenarioBMontante'),
+            cenarioBTotalInv: document.getElementById('cenarioBTotalInv'),
+            cenarioBJuros:    document.getElementById('cenarioBJuros'),
+            cenarioBMultiplo: document.getElementById('cenarioBMultiplo'),
+            deltaMontante:    document.getElementById('deltaMontante'),
+            deltaAportes:     document.getElementById('deltaAportes'),
+            deltaNota:        document.getElementById('deltaNota'),
+            comparisonIntro:  document.getElementById('comparisonIntro'),
+        };
+    }
 
-  addEventListeners() {
-      Object.values(this.inputs).forEach(input => {
-          input.addEventListener('input', () => this.calcular());
-      });
-  }
+    addEventListeners() {
+        Object.values(this.inputs).forEach(input => {
+            input.addEventListener('input', () => this.calcular());
+        });
+    }
 
-  formatarMoedaReal(valor) {
-      return valor.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-      });
-  }
+    formatarMoedaReal(valor) {
+        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
 
-  formatarMoedaDolar(valor) {
-    return valor.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'USD'
-    });
-  }
+    formatarMoedaDolar(valor) {
+        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'USD' });
+    }
 
-  calcularPercMens(percAnual) {
-      return Math.pow(1 + percAnual/100, 1/12) - 1;
-  }
+    calcularPercMens(percAnual) {
+        return Math.pow(1 + percAnual / 100, 1 / 12) - 1;
+    }
 
-  calcularMontante(investInicial, investMensal, meses, taxa) {
-      const montante = investInicial * Math.pow(1 + taxa, meses) +
-          investMensal * ((Math.pow(1 + taxa, meses) - 1) / taxa);
-      return montante;
-  }
+    calcularMontante(investInicial, investMensal, meses, taxa) {
+        if (taxa === 0) return investInicial + investMensal * meses;
+        return investInicial * Math.pow(1 + taxa, meses) +
+            investMensal * ((Math.pow(1 + taxa, meses) - 1) / taxa);
+    }
 
-  calcularInfluenciaMensal(invInicial, invMens, meses, taxa) {
-      const percentuais = [];
-      let montanteAnterior = invInicial;
-      
-      for (let i = 1; i <= meses; i++) {      
-          // Calcula a influência dividindo o investimento mensal pelo montante no início do mês
-          const influenciaIsolada = (invMens / montanteAnterior) * 100;
-          percentuais.push({
-              isolada: influenciaIsolada
-          });
-          
-          // Atualiza o montante para o próximo mês
-          montanteAnterior = montanteAnterior * (1 + taxa) + invMens;
-      }
-      return percentuais;
-  }
+    // Returns {mes, montante, totalAportado} when monthly return >= monthly contribution,
+    // or null if never reached within 100 years.
+    calcularSweetspot(invInicial, invMens, percMens) {
+        if (percMens <= 0 || invMens <= 0) return null;
+        if (invInicial * percMens >= invMens) {
+            return { mes: 0, montante: invInicial, totalAportado: invInicial };
+        }
+        let montante = invInicial;
+        for (let mes = 1; mes <= 1200; mes++) {
+            montante = montante * (1 + percMens) + invMens;
+            if (montante * percMens >= invMens) {
+                return { mes, montante, totalAportado: invInicial + mes * invMens };
+            }
+        }
+        return null;
+    }
 
-  atualizarPercentuaisMensais(percentuais) {
-      const container = document.getElementById('percentuaisList');
-      container.innerHTML = '';
-      
-      const table = document.createElement('table');
-      table.innerHTML = `
-          <tr>
-              <th>Ano</th>
-              <th>Mês</th>
-              <th>Influência Mensal</th>
-          </tr>
-      `;
-      
-      percentuais.forEach((perc, index) => {
-          const ano = Math.floor(index / 12) + 1;
-          const mes = (index % 12) + 1;
-          
-          const row = document.createElement('tr');
-          row.innerHTML = `
-              <td>${ano}º</td>
-              <td>${mes}º</td>
-              <td>${perc.isolada.toFixed(2)}%</td>
-          `;
-          
-          if (mes === 1) {
-              row.classList.add('new-year');
-          }
-          
-          table.appendChild(row);
-      });
-      
-      container.appendChild(table);
-  }
+    calcularProjecaoAnual(invInicial, invMens, percMens, mesesTotal, sweetspotMes) {
+        const projecao = [];
+        let montanteA = invInicial;
+        let montanteB = invInicial;
+        for (let mes = 1; mes <= mesesTotal; mes++) {
+            const aporteA = mes <= sweetspotMes ? invMens : 0;
+            montanteA = montanteA * (1 + percMens) + aporteA;
+            montanteB = montanteB * (1 + percMens) + invMens;
+            if (mes % 12 === 0 || mes === mesesTotal) {
+                projecao.push({
+                    ano: Math.ceil(mes / 12),
+                    montanteA,
+                    montanteB,
+                    isSweetspotYear: sweetspotMes > 0 &&
+                        mes >= sweetspotMes && mes - 12 < sweetspotMes,
+                    pastSweetspot: mes > sweetspotMes,
+                });
+            }
+        }
+        return projecao;
+    }
 
-  calcular() {
-      const valores = {
-          percAnual: parseFloat(this.inputs.percAnual.value) || 0,
-          invIni: parseFloat(this.inputs.invIni.value) || 0,
-          anosTrab: parseInt(this.inputs.anosTrab.value) || 0,
-          invMens: parseFloat(this.inputs.invMens.value) || 0,
-          valorComido: parseFloat(this.inputs.valorComido.value) || 0,
-          anosDpsTrab: parseInt(this.inputs.anosDpsTrab.value) || 0,
-          diasTrab: parseInt(this.inputs.diasTrab.value) || 0,
-          claudia: this.inputs.claudia.checked
-      };
+    calcularInfluenciaMensal(invInicial, invMens, meses, taxa, sweetspotMes) {
+        const percentuais = [];
+        let montanteAnterior = invInicial;
+        for (let i = 1; i <= meses; i++) {
+            const influenciaIsolada = montanteAnterior > 0
+                ? (invMens / montanteAnterior) * 100
+                : 0;
+            percentuais.push({
+                isolada: influenciaIsolada,
+                isSweetspot: i === sweetspotMes,
+            });
+            montanteAnterior = montanteAnterior * (1 + taxa) + invMens;
+        }
+        return percentuais;
+    }
 
-      const percMens = this.calcularPercMens(valores.percAnual);
-      
-      const montanteIdeal = this.calcularMontante(
-          valores.invIni,
-          valores.invMens,
-          valores.anosTrab * 12,
-          percMens
-      );
+    atualizarSweetspot(sweetspot, percMens, anosTrab) {
+        const section = document.getElementById('sweetspotSection');
+        if (!section) return;
 
-      const percMens2 = percMens * (1 - (valores.valorComido / (montanteIdeal * percMens)));
+        if (!sweetspot || this.inputs.invMens.value == 0) {
+            section.style.display = 'none';
+            return;
+        }
 
-      const montanteApoc = this.calcularMontante(
-          montanteIdeal,
-          0,
-          valores.anosDpsTrab * 12,
-          percMens2
-      );
+        section.style.display = '';
 
-      const trabDia = valores.claudia ? 
-          ((7000 - 5000 + valores.invMens)/(0.8*5))/valores.diasTrab :
-          ((7000 + valores.invMens)/(0.8*5))/valores.diasTrab;
+        const mesesTotal = anosTrab * 12;
+        let labelMes;
+        if (sweetspot.mes === 0) {
+            labelMes = 'Já alcançado (mês 0)';
+        } else if (sweetspot.mes > mesesTotal) {
+            const anos = Math.floor(sweetspot.mes / 12);
+            const meses = sweetspot.mes % 12;
+            labelMes = `Mês ${sweetspot.mes} (${anos}a ${meses}m) — após o período`;
+        } else {
+            const anos = Math.floor(sweetspot.mes / 12);
+            const meses = sweetspot.mes % 12;
+            labelMes = `Mês ${sweetspot.mes}` + (anos > 0 ? ` — ${anos}a ${meses}m` : '');
+        }
 
-      const percentuaisMensais = this.calcularInfluenciaMensal(
-          valores.invIni,
-          valores.invMens,
-          valores.anosTrab * 12,
-          percMens
-      );
+        this.outputs.sweetspotMes.textContent = labelMes;
+        this.outputs.sweetspotMontante.textContent = this.formatarMoedaReal(sweetspot.montante);
+        this.outputs.sweetspotRendimento.textContent =
+            this.formatarMoedaReal(sweetspot.montante * percMens);
+        this.outputs.sweetspotTotalInv.textContent =
+            this.formatarMoedaReal(sweetspot.totalAportado);
+    }
 
-      this.atualizarPercentuaisMensais(percentuaisMensais);
-      this.atualizarResultados(montanteIdeal, montanteApoc, trabDia);
-  }
+    atualizarComparacao(sweetspot, valores, percMens, montanteIdeal) {
+        const section = document.getElementById('comparisonSection');
+        if (!section) return;
 
-  atualizarResultados(montanteIdeal, montanteApoc, trabDia) {
-      this.outputs.montanteIdeal.textContent = this.formatarMoedaReal(montanteIdeal);
-      this.outputs.montanteApoc.textContent = this.formatarMoedaReal(montanteApoc);
-      this.outputs.trabDia.textContent = this.formatarMoedaDolar(trabDia);
-  }
+        const mesesTotal = valores.anosTrab * 12;
+        const totalAportadoB = valores.invIni + mesesTotal * valores.invMens;
+        const totalJurosB = montanteIdeal - totalAportadoB;
+
+        this.outputs.cenarioBMontante.textContent = this.formatarMoedaReal(montanteIdeal);
+        this.outputs.cenarioBTotalInv.textContent = this.formatarMoedaReal(totalAportadoB);
+        this.outputs.cenarioBJuros.textContent = this.formatarMoedaReal(totalJurosB);
+        this.outputs.cenarioBMultiplo.textContent =
+            totalAportadoB > 0 ? `${(montanteIdeal / totalAportadoB).toFixed(2)}×` : '—';
+
+        const podeComparar = sweetspot && sweetspot.mes > 0 && sweetspot.mes < mesesTotal;
+
+        if (!podeComparar) {
+            if (!sweetspot || valores.invMens === 0) {
+                section.style.display = 'none';
+            } else {
+                section.style.display = '';
+                const msg = sweetspot.mes === 0
+                    ? 'Sweetspot já alcançado antes de começar — compare aportar vs não aportar.'
+                    : 'O sweetspot é alcançado após o período de trabalho simulado. Continue aportando durante todo o período.';
+                this.outputs.comparisonIntro.textContent = msg;
+                this.outputs.cenarioAMontante.textContent = '—';
+                this.outputs.cenarioATotalInv.textContent = '—';
+                this.outputs.cenarioAJuros.textContent = '—';
+                this.outputs.cenarioAMultiplo.textContent = '—';
+                this.outputs.deltaMontante.textContent = '—';
+                this.outputs.deltaAportes.textContent = '—';
+                this.outputs.deltaNota.textContent = '';
+                document.getElementById('projecaoList').innerHTML = '';
+            }
+            return;
+        }
+
+        section.style.display = '';
+        const anos = Math.floor(sweetspot.mes / 12);
+        const mesesR = sweetspot.mes % 12;
+        this.outputs.comparisonIntro.textContent =
+            `Simulação de ${valores.anosTrab} anos — sweetspot no mês ${sweetspot.mes} ` +
+            `(${anos}a ${mesesR}m). A partir daí o Cenário A para de aportar.`;
+
+        const mesesRestantes = mesesTotal - sweetspot.mes;
+        const montanteA = sweetspot.montante * Math.pow(1 + percMens, mesesRestantes);
+        const totalAportadoA = sweetspot.totalAportado;
+        const totalJurosA = montanteA - totalAportadoA;
+
+        this.outputs.cenarioAMontante.textContent = this.formatarMoedaReal(montanteA);
+        this.outputs.cenarioATotalInv.textContent = this.formatarMoedaReal(totalAportadoA);
+        this.outputs.cenarioAJuros.textContent = this.formatarMoedaReal(totalJurosA);
+        this.outputs.cenarioAMultiplo.textContent =
+            totalAportadoA > 0 ? `${(montanteA / totalAportadoA).toFixed(2)}×` : '—';
+
+        const delta = montanteIdeal - montanteA;
+        const deltaAportes = totalAportadoB - totalAportadoA;
+
+        this.outputs.deltaMontante.textContent = this.formatarMoedaReal(delta);
+        this.outputs.deltaMontante.style.color = delta >= 0 ? 'var(--blue)' : 'var(--green)';
+        this.outputs.deltaAportes.textContent = this.formatarMoedaReal(deltaAportes);
+
+        const rendExtreA = totalAportadoA > 0 ? totalJurosA / totalAportadoA : 0;
+        const rendExtreB = totalAportadoB > 0 ? totalJurosB / totalAportadoB : 0;
+        this.outputs.deltaNota.textContent =
+            `Rendimento sobre aporte: A = ${(rendExtreA * 100).toFixed(0)}%  ·  ` +
+            `B = ${(rendExtreB * 100).toFixed(0)}%`;
+
+        const projecao = this.calcularProjecaoAnual(
+            valores.invIni, valores.invMens, percMens, mesesTotal, sweetspot.mes
+        );
+        this.atualizarTabelaProjecao(projecao);
+    }
+
+    atualizarTabelaProjecao(projecao) {
+        const container = document.getElementById('projecaoList');
+        if (!container) return;
+
+        const table = document.createElement('table');
+        table.innerHTML = `
+            <tr>
+                <th>Ano</th>
+                <th>A — Para no Sweetspot</th>
+                <th>B — Continua Aportando</th>
+            </tr>
+        `;
+
+        projecao.forEach(({ ano, montanteA, montanteB, isSweetspotYear, pastSweetspot }) => {
+            const row = document.createElement('tr');
+            if (isSweetspotYear) row.classList.add('sweetspot-row');
+            else if (pastSweetspot) row.classList.add('past-sweetspot');
+            row.innerHTML = `
+                <td>${ano}º</td>
+                <td>${this.formatarMoedaReal(montanteA)}</td>
+                <td>${this.formatarMoedaReal(montanteB)}</td>
+            `;
+            table.appendChild(row);
+        });
+
+        container.innerHTML = '';
+        container.appendChild(table);
+    }
+
+    atualizarPercentuaisMensais(percentuais) {
+        const container = document.getElementById('percentuaisList');
+        container.innerHTML = '';
+
+        const table = document.createElement('table');
+        table.innerHTML = `
+            <tr>
+                <th>Ano</th>
+                <th>Mês</th>
+                <th>Influência do Aporte</th>
+            </tr>
+        `;
+
+        percentuais.forEach((perc, index) => {
+            const ano = Math.floor(index / 12) + 1;
+            const mes = (index % 12) + 1;
+            const row = document.createElement('tr');
+            if (perc.isSweetspot) row.classList.add('sweetspot-influence');
+            if (mes === 1) row.classList.add('new-year');
+            row.innerHTML = `
+                <td>${ano}º</td>
+                <td>${mes}º</td>
+                <td>${perc.isolada.toFixed(2)}%${perc.isSweetspot ? ' 🎯' : ''}</td>
+            `;
+            table.appendChild(row);
+        });
+
+        container.appendChild(table);
+    }
+
+    calcular() {
+        const valores = {
+            percAnual:   parseFloat(this.inputs.percAnual.value)   || 0,
+            invIni:      parseFloat(this.inputs.invIni.value)      || 0,
+            anosTrab:    parseInt(this.inputs.anosTrab.value)      || 0,
+            invMens:     parseFloat(this.inputs.invMens.value)     || 0,
+            valorComido: parseFloat(this.inputs.valorComido.value) || 0,
+            anosDpsTrab: parseInt(this.inputs.anosDpsTrab.value)   || 0,
+            diasTrab:    parseInt(this.inputs.diasTrab.value)      || 0,
+            claudia:     this.inputs.claudia.checked,
+        };
+
+        const percMens = this.calcularPercMens(valores.percAnual);
+
+        const montanteIdeal = this.calcularMontante(
+            valores.invIni, valores.invMens, valores.anosTrab * 12, percMens
+        );
+
+        const percMens2 = percMens > 0
+            ? percMens * (1 - (valores.valorComido / (montanteIdeal * percMens)))
+            : 0;
+
+        const montanteApoc = this.calcularMontante(
+            montanteIdeal, 0, valores.anosDpsTrab * 12, percMens2
+        );
+
+        const trabDia = valores.claudia
+            ? ((7000 - 5000 + valores.invMens) / (0.8 * 5)) / valores.diasTrab
+            : ((7000 + valores.invMens) / (0.8 * 5)) / valores.diasTrab;
+
+        const sweetspot = this.calcularSweetspot(valores.invIni, valores.invMens, percMens);
+        const sweetspotMes = sweetspot ? sweetspot.mes : Infinity;
+
+        const percentuaisMensais = this.calcularInfluenciaMensal(
+            valores.invIni, valores.invMens, valores.anosTrab * 12, percMens, sweetspotMes
+        );
+
+        this.atualizarResultados(montanteIdeal, montanteApoc, trabDia);
+        this.atualizarPercentuaisMensais(percentuaisMensais);
+        this.atualizarSweetspot(sweetspot, percMens, valores.anosTrab);
+        this.atualizarComparacao(sweetspot, valores, percMens, montanteIdeal);
+    }
+
+    atualizarResultados(montanteIdeal, montanteApoc, trabDia) {
+        this.outputs.montanteIdeal.textContent = this.formatarMoedaReal(montanteIdeal);
+        this.outputs.montanteApoc.textContent  = this.formatarMoedaReal(montanteApoc);
+        this.outputs.trabDia.textContent       = this.formatarMoedaDolar(trabDia);
+    }
 }
 
 class CalculadoraEmprestimo {
@@ -166,39 +344,34 @@ class CalculadoraEmprestimo {
 
     initializeElements() {
         this.inputs = {
-            tipoEmprestimo: document.getElementById('tipoEmprestimo'),
-            valorEmprestimo: document.getElementById('valorEmprestimo'),
-            // Price inputs
-            prazoMeses: document.getElementById('prazoMeses'),
-            taxaMensal: document.getElementById('taxaMensal'),
-            amortizacaoExtra: document.getElementById('amortizacaoExtra'),
-            // Bullet inputs
-            prazoAnos: document.getElementById('prazoAnos'),
-            taxaAnual: document.getElementById('taxaAnual'),
-            frequenciaPagamento: document.getElementById('frequenciaPagamento')
+            tipoEmprestimo:      document.getElementById('tipoEmprestimo'),
+            valorEmprestimo:     document.getElementById('valorEmprestimo'),
+            prazoMeses:          document.getElementById('prazoMeses'),
+            taxaMensal:          document.getElementById('taxaMensal'),
+            amortizacaoExtra:    document.getElementById('amortizacaoExtra'),
+            prazoAnos:           document.getElementById('prazoAnos'),
+            taxaAnual:           document.getElementById('taxaAnual'),
+            frequenciaPagamento: document.getElementById('frequenciaPagamento'),
         };
 
         this.outputs = {
-            // Price outputs
-            parcelaMensal: document.getElementById('parcelaMensal'),
-            totalJuros: document.getElementById('totalJuros'),
-            totalJurosAmort: document.getElementById('totalJurosAmort'),
-            tempoQuitacao: document.getElementById('tempoQuitacao'),
-            evolucaoList: document.getElementById('evolucaoList'),
-            // Bullet outputs
-            jurosPeriodo: document.getElementById('jurosPeriodo'),
-            totalJurosBullet: document.getElementById('totalJurosBullet'),
-            principalBullet: document.getElementById('principalBullet'),
-            totalGeralBullet: document.getElementById('totalGeralBullet'),
-            fluxoPagamentosList: document.getElementById('fluxoPagamentosList')
+            parcelaMensal:       document.getElementById('parcelaMensal'),
+            totalJuros:          document.getElementById('totalJuros'),
+            totalJurosAmort:     document.getElementById('totalJurosAmort'),
+            tempoQuitacao:       document.getElementById('tempoQuitacao'),
+            evolucaoList:        document.getElementById('evolucaoList'),
+            jurosPeriodo:        document.getElementById('jurosPeriodo'),
+            totalJurosBullet:    document.getElementById('totalJurosBullet'),
+            principalBullet:     document.getElementById('principalBullet'),
+            totalGeralBullet:    document.getElementById('totalGeralBullet'),
+            fluxoPagamentosList: document.getElementById('fluxoPagamentosList'),
         };
 
-        // Elements containers
         this.containers = {
-            camposPrice: document.getElementById('campos-price'),
-            camposBullet: document.getElementById('campos-bullet'),
-            resultsPrice: document.getElementById('results-price'),
-            resultsBullet: document.getElementById('results-bullet')
+            camposPrice:   document.getElementById('campos-price'),
+            camposBullet:  document.getElementById('campos-bullet'),
+            resultsPrice:  document.getElementById('results-price'),
+            resultsBullet: document.getElementById('results-bullet'),
         };
     }
 
@@ -207,7 +380,6 @@ class CalculadoraEmprestimo {
             this.alternarTipoEmprestimo();
             this.calcular();
         });
-
         Object.values(this.inputs).forEach(input => {
             if (input !== this.inputs.tipoEmprestimo) {
                 input.addEventListener('input', () => this.calcular());
@@ -217,10 +389,9 @@ class CalculadoraEmprestimo {
 
     alternarTipoEmprestimo() {
         const isBullet = this.inputs.tipoEmprestimo.value === 'bullet';
-        
-        this.containers.camposPrice.style.display = isBullet ? 'none' : 'flex';
-        this.containers.camposBullet.style.display = isBullet ? 'flex' : 'none';
-        this.containers.resultsPrice.style.display = isBullet ? 'none' : 'block';
+        this.containers.camposPrice.style.display   = isBullet ? 'none' : 'flex';
+        this.containers.camposBullet.style.display  = isBullet ? 'flex' : 'none';
+        this.containers.resultsPrice.style.display  = isBullet ? 'none' : 'block';
         this.containers.resultsBullet.style.display = isBullet ? 'block' : 'none';
     }
 
@@ -235,12 +406,10 @@ class CalculadoraEmprestimo {
         let saldoDevedor = valor;
         let totalJuros = 0;
         let mesesRestantes = prazo;
-        let i = 1;
 
-        while (saldoDevedor > 0 && i <= prazo * 2) { // limite de segurança
+        for (let i = 1; saldoDevedor > 0 && i <= prazo * 2; i++) {
             const juros = saldoDevedor * (taxa / 100);
             totalJuros += juros;
-
             let amortizacao = parcelaPadrao - juros;
             const amortizacaoTotal = amortizacao + (amortExtra || 0);
 
@@ -251,48 +420,32 @@ class CalculadoraEmprestimo {
                 saldoDevedor -= amortizacaoTotal;
             }
 
-            evolucao.push({
-                mes: i,
-                saldoDevedor,
-                juros,
-                amortizacao: amortizacaoTotal,
-                parcela: juros + amortizacao
-            });
+            evolucao.push({ mes: i, saldoDevedor, juros, amortizacao: amortizacaoTotal, parcela: juros + amortizacao });
 
-            if (saldoDevedor <= 0) {
-                mesesRestantes = i;
-                break;
-            }
-
-            i++;
+            if (saldoDevedor <= 0) { mesesRestantes = i; break; }
         }
 
-        return {
-            evolucao,
-            totalJuros,
-            mesesRestantes,
-            parcelaPadrao
-        };
+        return { evolucao, totalJuros, mesesRestantes, parcelaPadrao };
     }
 
     calcularBullet() {
         const valores = {
-            valorEmprestimo: parseFloat(this.inputs.valorEmprestimo.value) || 0,
-            prazoAnos: parseInt(this.inputs.prazoAnos.value) || 0,
-            taxaAnual: parseFloat(this.inputs.taxaAnual.value) || 0,
-            frequenciaPagamento: this.inputs.frequenciaPagamento.value
+            valorEmprestimo:     parseFloat(this.inputs.valorEmprestimo.value) || 0,
+            prazoAnos:           parseInt(this.inputs.prazoAnos.value) || 0,
+            taxaAnual:           parseFloat(this.inputs.taxaAnual.value) || 0,
+            frequenciaPagamento: this.inputs.frequenciaPagamento.value,
         };
 
-        const taxaPeriodo = valores.taxaAnual / 100;
-        const jurosPeriodo = valores.valorEmprestimo * taxaPeriodo;
-        const periodosPorAno = valores.frequenciaPagamento === 'mensal' ? 12 : 1;
-        const totalPeriodos = valores.prazoAnos * periodosPorAno;
-        const jurosPorPeriodo = jurosPeriodo / periodosPorAno;
-        const totalJuros = jurosPeriodo * valores.prazoAnos;
+        const taxaPeriodo      = valores.taxaAnual / 100;
+        const jurosPeriodo     = valores.valorEmprestimo * taxaPeriodo;
+        const periodosPorAno   = valores.frequenciaPagamento === 'mensal' ? 12 : 1;
+        const totalPeriodos    = valores.prazoAnos * periodosPorAno;
+        const jurosPorPeriodo  = jurosPeriodo / periodosPorAno;
+        const totalJuros       = jurosPeriodo * valores.prazoAnos;
 
-        this.outputs.jurosPeriodo.textContent = this.formatarMoeda(jurosPorPeriodo);
+        this.outputs.jurosPeriodo.textContent    = this.formatarMoeda(jurosPorPeriodo);
         this.outputs.totalJurosBullet.textContent = this.formatarMoeda(totalJuros);
-        this.outputs.principalBullet.textContent = this.formatarMoeda(valores.valorEmprestimo);
+        this.outputs.principalBullet.textContent  = this.formatarMoeda(valores.valorEmprestimo);
         this.outputs.totalGeralBullet.textContent = this.formatarMoeda(valores.valorEmprestimo + totalJuros);
 
         this.atualizarTabelaFluxoPagamentos(valores, jurosPorPeriodo, totalPeriodos);
@@ -300,19 +453,10 @@ class CalculadoraEmprestimo {
 
     atualizarTabelaFluxoPagamentos(valores, jurosPorPeriodo, totalPeriodos) {
         const table = document.createElement('table');
-        table.innerHTML = `
-            <tr>
-                <th>Período</th>
-                <th>Juros</th>
-                <th>Principal</th>
-                <th>Total</th>
-            </tr>
-        `;
-
+        table.innerHTML = `<tr><th>Período</th><th>Juros</th><th>Principal</th><th>Total</th></tr>`;
         for (let i = 1; i <= totalPeriodos; i++) {
-            const row = document.createElement('tr');
             const isPeriodoFinal = i === totalPeriodos;
-            
+            const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${i}º</td>
                 <td>${this.formatarMoeda(jurosPorPeriodo)}</td>
@@ -321,7 +465,6 @@ class CalculadoraEmprestimo {
             `;
             table.appendChild(row);
         }
-
         this.outputs.fluxoPagamentosList.innerHTML = '';
         this.outputs.fluxoPagamentosList.appendChild(table);
     }
@@ -329,58 +472,34 @@ class CalculadoraEmprestimo {
     calcular() {
         if (this.inputs.tipoEmprestimo.value === 'bullet') {
             this.calcularBullet();
-        } else {
-            const valores = {
-                valorEmprestimo: parseFloat(this.inputs.valorEmprestimo.value) || 0,
-                prazoMeses: parseInt(this.inputs.prazoMeses.value) || 0,
-                taxaMensal: parseFloat(this.inputs.taxaMensal.value) || 0,
-                amortizacaoExtra: parseFloat(this.inputs.amortizacaoExtra.value) || 0
-            };
-
-            const resultadoSemAmort = this.calcularEvolucaoPrice(
-                valores.valorEmprestimo,
-                valores.prazoMeses,
-                valores.taxaMensal,
-                0
-            );
-
-            const resultadoComAmort = this.calcularEvolucaoPrice(
-                valores.valorEmprestimo,
-                valores.prazoMeses,
-                valores.taxaMensal,
-                valores.amortizacaoExtra
-            );
-
-            this.outputs.parcelaMensal.textContent = this.formatarMoeda(resultadoSemAmort.parcelaPadrao);
-            this.outputs.totalJuros.textContent = this.formatarMoeda(resultadoSemAmort.totalJuros);
-            this.outputs.totalJurosAmort.textContent = this.formatarMoeda(resultadoComAmort.totalJuros);
-            this.outputs.tempoQuitacao.textContent = `${resultadoComAmort.mesesRestantes} meses`;
-
-            this.atualizarTabelaEvolucao(resultadoComAmort.evolucao);
+            return;
         }
+
+        const valores = {
+            valorEmprestimo:  parseFloat(this.inputs.valorEmprestimo.value) || 0,
+            prazoMeses:       parseInt(this.inputs.prazoMeses.value) || 0,
+            taxaMensal:       parseFloat(this.inputs.taxaMensal.value) || 0,
+            amortizacaoExtra: parseFloat(this.inputs.amortizacaoExtra.value) || 0,
+        };
+
+        const semAmort  = this.calcularEvolucaoPrice(valores.valorEmprestimo, valores.prazoMeses, valores.taxaMensal, 0);
+        const comAmort  = this.calcularEvolucaoPrice(valores.valorEmprestimo, valores.prazoMeses, valores.taxaMensal, valores.amortizacaoExtra);
+
+        this.outputs.parcelaMensal.textContent    = this.formatarMoeda(semAmort.parcelaPadrao);
+        this.outputs.totalJuros.textContent       = this.formatarMoeda(semAmort.totalJuros);
+        this.outputs.totalJurosAmort.textContent  = this.formatarMoeda(comAmort.totalJuros);
+        this.outputs.tempoQuitacao.textContent    = `${comAmort.mesesRestantes} meses`;
+
+        this.atualizarTabelaEvolucao(comAmort.evolucao);
     }
 
     formatarMoeda(valor) {
-        return valor.toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     atualizarTabelaEvolucao(evolucao) {
         const table = document.createElement('table');
-        table.innerHTML = `
-            <tr>
-                <th>Mês</th>
-                <th>Parcela</th>
-                <th>Juros</th>
-                <th>Amortização</th>
-                <th>Saldo Devedor</th>
-            </tr>
-        `;
-
+        table.innerHTML = `<tr><th>Mês</th><th>Parcela</th><th>Juros</th><th>Amortização</th><th>Saldo Devedor</th></tr>`;
         evolucao.forEach(mes => {
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -392,38 +511,28 @@ class CalculadoraEmprestimo {
             `;
             table.appendChild(row);
         });
-
         this.outputs.evolucaoList.innerHTML = '';
         this.outputs.evolucaoList.appendChild(table);
     }
 }
 
-// Inicialização das calculadoras e controle das abas
 document.addEventListener('DOMContentLoaded', () => {
     const calculadoraInv = new CalculadoraInvestimentos();
     const calculadoraEmp = new CalculadoraEmprestimo();
-    
-    // Configuração das abas
-    const tabs = document.querySelectorAll('.tab-button');
+
+    const tabs     = document.querySelectorAll('.tab-button');
     const contents = document.querySelectorAll('.tab-content');
-    
+
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            const targetId = tab.dataset.tab;
-            
-            // Atualiza classes ativas
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            
-            // Mostra/esconde conteúdo
-            contents.forEach(content => {
-                content.style.display = content.id === targetId ? 'block' : 'none';
+            contents.forEach(c => {
+                c.style.display = c.id === tab.dataset.tab ? 'flex' : 'none';
             });
         });
     });
 
-    // Calcula valores iniciais
     calculadoraInv.calcular();
     calculadoraEmp.calcular();
-
 });

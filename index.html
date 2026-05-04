@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Investimentos</title>
-
-    <!-- PWA Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon.svg">
     <link rel="manifest" href="manifest.json">
-    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -18,165 +15,296 @@
         <button class="tab-button active" data-tab="investimentos">Investimentos</button>
         <button class="tab-button" data-tab="emprestimo">Empréstimo</button>
     </div>
-    
+
+    <!-- ══ TAB: INVESTIMENTOS ══ -->
     <div class="container tab-content" id="investimentos">
         <h1>Calculadora de Investimentos</h1>
-        <div class="form-container">
-            <div class="input-group">
-                <label for="percAnual">Rendimento Anual (%)</label>
-                <input type="number" id="percAnual" step="0.01" value="15" required>
-            </div>
-            <div class="input-group">
-                <label for="invIni">Investimento Inicial (R$)</label>
-                <input type="number" id="invIni" step="0.01" value="80000" required>
-            </div>
-            <div class="input-group">
-                <label for="anosTrab">Anos Trabalhados</label>
-                <input type="number" id="anosTrab" value="3" required>
-            </div>
-            <div class="input-group">
-                <label for="invMens">Investimento Mensal (R$)</label>
-                <input type="number" id="invMens" step="1000" value="12000" required>
-            </div>
-            <div class="input-group">
-                <label for="diasTrab">Dias Trabalhados por mes</label>
-                <input type="number" id="diasTrab" step="1" value="22" required>
-            </div>
-            <div class="input-group checkbox">
-              <input type="checkbox" id="claudia" checked>
-              <label for="claudia">Rendimento Claudia R$5k (só conta no consumo)</label>
-          </div>
-            <div class="input-group">
-                <label for="valorComido">Valor Consumido do Investimento Após Apocalipse (R$)</label>
-                <input type="number" id="valorComido" step="1000" value="0" required>
-            </div>
-            <div class="input-group">
-                <label for="anosDpsTrab">Anos Após Trabalho</label>
-                <input type="number" id="anosDpsTrab" value="0" required>
+
+        <!-- Parâmetros -->
+        <div class="card">
+            <p class="card-title">Parâmetros</p>
+            <div class="form-container">
+                <div class="input-group">
+                    <label for="percAnual">Rendimento Anual (%)</label>
+                    <input type="number" id="percAnual" step="0.01" value="15" required>
+                </div>
+                <div class="input-group">
+                    <label for="invIni">Investimento Inicial (R$)</label>
+                    <input type="number" id="invIni" step="0.01" value="80000" required>
+                </div>
+                <div class="input-group">
+                    <label for="anosTrab">Anos Trabalhados</label>
+                    <input type="number" id="anosTrab" value="3" required>
+                </div>
+                <div class="input-group">
+                    <label for="invMens">Aporte Mensal (R$)</label>
+                    <input type="number" id="invMens" step="1000" value="12000" required>
+                </div>
+                <div class="input-group">
+                    <label for="diasTrab">Dias Trabalhados por Mês</label>
+                    <input type="number" id="diasTrab" step="1" value="22" required>
+                </div>
+                <div class="input-group checkbox">
+                    <input type="checkbox" id="claudia" checked>
+                    <label for="claudia">Rendimento Claudia R$5k (só conta no consumo)</label>
+                </div>
             </div>
         </div>
-        <div class="results">
-            <div class="result-item">
-                <span>Montante Ideal:</span>
-                <span id="montanteIdeal">R$ 0,00</span>
+
+        <!-- Pós-apocalipse -->
+        <div class="card">
+            <p class="card-title">Pós-Aposentadoria</p>
+            <div class="form-container">
+                <div class="input-group">
+                    <label for="valorComido">Valor Consumido por Mês (R$)</label>
+                    <p class="input-hint">Quanto você retira do investimento todo mês</p>
+                    <input type="number" id="valorComido" step="1000" value="0" required>
+                </div>
+                <div class="input-group">
+                    <label for="anosDpsTrab">Anos Após Aposentadoria</label>
+                    <input type="number" id="anosDpsTrab" value="0" required>
+                </div>
             </div>
-            <div class="result-item">
-                <span>Montante Apocalipse:</span>
-                <span id="montanteApoc">R$ 0,00</span>
+        </div>
+
+        <!-- Resultados principais -->
+        <div class="card">
+            <p class="card-title">Resultados</p>
+            <div class="results-grid">
+                <div class="result-item highlight">
+                    <span>Montante ao Final do Trabalho</span>
+                    <span id="montanteIdeal">R$ 0,00</span>
+                </div>
+                <div class="result-item">
+                    <span>Montante Pós-Aposentadoria</span>
+                    <span id="montanteApoc">R$ 0,00</span>
+                </div>
+                <div class="result-item">
+                    <span>Ganho por Dia Trabalhado</span>
+                    <span id="trabDia">USD 0,00</span>
+                </div>
             </div>
-            <div class="result-item">
-                <span>Trabalho por Dia:</span>
-                <span id="trabDia">USD 0,00</span>
+        </div>
+
+        <!-- Sweetspot -->
+        <div class="card card-sweetspot" id="sweetspotSection" style="display:none">
+            <div class="sweetspot-header">
+                <span>🎯</span>
+                <h3>Sweetspot dos Aportes</h3>
+            </div>
+            <p class="sweetspot-desc">
+                Mês em que os juros mensais gerados pelo patrimônio superam o valor do aporte —
+                a partir daqui o portfolio "trabalha mais do que você".
+            </p>
+            <div class="sweetspot-stats">
+                <div class="sweetspot-stat">
+                    <span class="stat-label">Mês / Ano</span>
+                    <span class="stat-value" id="sweetspotMes">—</span>
+                </div>
+                <div class="sweetspot-stat">
+                    <span class="stat-label">Patrimônio</span>
+                    <span class="stat-value" id="sweetspotMontante">—</span>
+                </div>
+                <div class="sweetspot-stat">
+                    <span class="stat-label">Juros Mensais</span>
+                    <span class="stat-value" id="sweetspotRendimento">—</span>
+                </div>
+                <div class="sweetspot-stat">
+                    <span class="stat-label">Total Aportado até lá</span>
+                    <span class="stat-value" id="sweetspotTotalInv">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparação de cenários -->
+        <div class="card" id="comparisonSection" style="display:none">
+            <p class="card-title">Comparação de Cenários</p>
+            <p class="comparison-intro" id="comparisonIntro">—</p>
+
+            <div class="comparison-cards">
+                <div class="comp-card card-a">
+                    <div class="comp-card-header">
+                        <span class="comp-badge badge-a">A</span>
+                        <h4>Para no Sweetspot</h4>
+                    </div>
+                    <div class="comp-stat primary">
+                        <span>Montante Final</span>
+                        <strong id="cenarioAMontante">—</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>Total Aportado</span>
+                        <strong id="cenarioATotalInv">—</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>Juros Gerados</span>
+                        <strong id="cenarioAJuros">—</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>Múltiplo do Capital</span>
+                        <strong id="cenarioAMultiplo">—</strong>
+                    </div>
+                </div>
+
+                <div class="comp-card card-b">
+                    <div class="comp-card-header">
+                        <span class="comp-badge badge-b">B</span>
+                        <h4>Continua Aportando</h4>
+                    </div>
+                    <div class="comp-stat primary">
+                        <span>Montante Final</span>
+                        <strong id="cenarioBMontante">—</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>Total Aportado</span>
+                        <strong id="cenarioBTotalInv">—</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>Juros Gerados</span>
+                        <strong id="cenarioBJuros">—</strong>
+                    </div>
+                    <div class="comp-stat">
+                        <span>Múltiplo do Capital</span>
+                        <strong id="cenarioBMultiplo">—</strong>
+                    </div>
+                </div>
             </div>
 
-            <h3>Percentual de Influência por Mês</h3>
+            <div class="comparison-delta">
+                <div class="delta-item">
+                    <span>Diferença no Montante Final (B − A)</span>
+                    <strong id="deltaMontante">—</strong>
+                </div>
+                <div class="delta-item">
+                    <span>Economia de Aportes no Cenário A</span>
+                    <strong id="deltaAportes" style="color:var(--green)">—</strong>
+                </div>
+                <p class="delta-note" id="deltaNota">—</p>
+            </div>
+
+            <p class="projecao-title">Projeção Ano a Ano</p>
+            <div class="projecao-container">
+                <div id="projecaoList" class="projecao-list"></div>
+            </div>
+        </div>
+
+        <!-- Influência mensal -->
+        <div class="card section-influence">
+            <h3>Influência do Aporte por Mês</h3>
             <div class="percentuais-mensais">
                 <div id="percentuaisList" class="percentuais-list"></div>
             </div>
         </div>
     </div>
 
-    <div class="container tab-content" id="emprestimo" style="display: none;">
+    <!-- ══ TAB: EMPRÉSTIMO ══ -->
+    <div class="container tab-content" id="emprestimo" style="display:none">
         <h1>Calculadora de Empréstimo</h1>
-        <div class="form-container">
-            <div class="input-group">
-                <label for="tipoEmprestimo">Tipo de Empréstimo</label>
-                <select id="tipoEmprestimo">
-                    <option value="price">Price (parcelas fixas)</option>
-                    <option value="bullet">Bullet (amortização única)</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="valorEmprestimo">Valor do Empréstimo (R$)</label>
-                <input type="number" id="valorEmprestimo" step="1000" value="100000" required>
-            </div>
 
-            <!-- Campos específicos do Price -->
-            <div id="campos-price">
+        <div class="card">
+            <p class="card-title">Parâmetros</p>
+            <div class="form-container">
                 <div class="input-group">
-                    <label for="prazoMeses">Prazo (meses)</label>
-                    <input type="number" id="prazoMeses" value="36" required>
-                </div>
-                <div class="input-group">
-                    <label for="taxaMensal">Taxa de Juros Mensal (%)</label>
-                    <input type="number" id="taxaMensal" step="0.01" value="1" required>
-                </div>
-                <div class="input-group">
-                    <label for="amortizacaoExtra">Amortização Extra Mensal (R$)</label>
-                    <input type="number" id="amortizacaoExtra" step="100" value="0" required>
-                </div>
-            </div>
-
-            <!-- Campos específicos do Bullet -->
-            <div id="campos-bullet" style="display: none;">
-                <div class="input-group">
-                    <label for="prazoAnos">Prazo (anos)</label>
-                    <input type="number" id="prazoAnos" value="3" required>
-                </div>
-                <div class="input-group">
-                    <label for="taxaAnual">Taxa de Juros Anual (%)</label>
-                    <input type="number" id="taxaAnual" step="0.01" value="12" required>
-                </div>
-                <div class="input-group">
-                    <label for="frequenciaPagamento">Frequência de Pagamento dos Juros</label>
-                    <select id="frequenciaPagamento">
-                        <option value="mensal">Mensal</option>
-                        <option value="anual">Anual</option>
+                    <label for="tipoEmprestimo">Tipo de Empréstimo</label>
+                    <select id="tipoEmprestimo">
+                        <option value="price">Price (parcelas fixas)</option>
+                        <option value="bullet">Bullet (amortização única)</option>
                     </select>
+                </div>
+                <div class="input-group">
+                    <label for="valorEmprestimo">Valor do Empréstimo (R$)</label>
+                    <input type="number" id="valorEmprestimo" step="1000" value="100000" required>
+                </div>
+
+                <div id="campos-price">
+                    <div class="input-group">
+                        <label for="prazoMeses">Prazo (meses)</label>
+                        <input type="number" id="prazoMeses" value="36" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="taxaMensal">Taxa de Juros Mensal (%)</label>
+                        <input type="number" id="taxaMensal" step="0.01" value="1" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="amortizacaoExtra">Amortização Extra Mensal (R$)</label>
+                        <input type="number" id="amortizacaoExtra" step="100" value="0" required>
+                    </div>
+                </div>
+
+                <div id="campos-bullet" style="display:none">
+                    <div class="input-group">
+                        <label for="prazoAnos">Prazo (anos)</label>
+                        <input type="number" id="prazoAnos" value="3" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="taxaAnual">Taxa de Juros Anual (%)</label>
+                        <input type="number" id="taxaAnual" step="0.01" value="12" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="frequenciaPagamento">Frequência de Pagamento</label>
+                        <select id="frequenciaPagamento">
+                            <option value="mensal">Mensal</option>
+                            <option value="anual">Anual</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Resultados do Price -->
-        <div class="results" id="results-price">
-            <div class="result-item">
-                <span>Parcela Mensal Padrão:</span>
-                <span id="parcelaMensal">R$ 0,00</span>
+        <!-- Resultados Price -->
+        <div class="card" id="results-price">
+            <p class="card-title">Resultados</p>
+            <div class="results-grid">
+                <div class="result-item highlight">
+                    <span>Parcela Mensal Padrão</span>
+                    <span id="parcelaMensal">R$ 0,00</span>
+                </div>
+                <div class="result-item">
+                    <span>Total de Juros (sem amortização extra)</span>
+                    <span id="totalJuros">R$ 0,00</span>
+                </div>
+                <div class="result-item">
+                    <span>Total de Juros (com amortização extra)</span>
+                    <span id="totalJurosAmort">R$ 0,00</span>
+                </div>
+                <div class="result-item">
+                    <span>Tempo para Quitação</span>
+                    <span id="tempoQuitacao">0 meses</span>
+                </div>
             </div>
-            <div class="result-item">
-                <span>Total de Juros (sem amortização):</span>
-                <span id="totalJuros">R$ 0,00</span>
-            </div>
-            <div class="result-item">
-                <span>Total de Juros (com amortização):</span>
-                <span id="totalJurosAmort">R$ 0,00</span>
-            </div>
-            <div class="result-item">
-                <span>Tempo para Quitação:</span>
-                <span id="tempoQuitacao">0 meses</span>
-            </div>
-
-            <h3>Evolução do Saldo Devedor</h3>
+            <p class="table-title">Evolução do Saldo Devedor</p>
             <div class="evolucao-emprestimo">
                 <div id="evolucaoList" class="evolucao-list"></div>
             </div>
         </div>
 
-        <!-- Resultados do Bullet -->
-        <div class="results" id="results-bullet" style="display: none;">
-            <div class="result-item">
-                <span>Juros por Período:</span>
-                <span id="jurosPeriodo">R$ 0,00</span>
+        <!-- Resultados Bullet -->
+        <div class="card" id="results-bullet" style="display:none">
+            <p class="card-title">Resultados</p>
+            <div class="results-grid">
+                <div class="result-item">
+                    <span>Juros por Período</span>
+                    <span id="jurosPeriodo">R$ 0,00</span>
+                </div>
+                <div class="result-item">
+                    <span>Total de Juros</span>
+                    <span id="totalJurosBullet">R$ 0,00</span>
+                </div>
+                <div class="result-item">
+                    <span>Principal a ser Pago</span>
+                    <span id="principalBullet">R$ 0,00</span>
+                </div>
+                <div class="result-item highlight">
+                    <span>Total Geral</span>
+                    <span id="totalGeralBullet">R$ 0,00</span>
+                </div>
             </div>
-            <div class="result-item">
-                <span>Total de Juros:</span>
-                <span id="totalJurosBullet">R$ 0,00</span>
-            </div>
-            <div class="result-item">
-                <span>Principal a ser Pago:</span>
-                <span id="principalBullet">R$ 0,00</span>
-            </div>
-            <div class="result-item">
-                <span>Total Geral:</span>
-                <span id="totalGeralBullet">R$ 0,00</span>
-            </div>
-
-            <h3>Fluxo de Pagamentos</h3>
+            <p class="table-title">Fluxo de Pagamentos</p>
             <div class="evolucao-emprestimo">
                 <div id="fluxoPagamentosList" class="evolucao-list"></div>
             </div>
         </div>
     </div>
+
     <script src="calc.js"></script>
 </body>
 </html>
