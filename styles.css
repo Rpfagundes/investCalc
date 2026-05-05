@@ -138,7 +138,7 @@ h1 {
   margin-top: -2px;
 }
 
-.input-group input,
+.input-group input:not([type="checkbox"]),
 .input-group select {
   padding: 10px 12px;
   border: 1.5px solid var(--slate-200);
@@ -167,8 +167,6 @@ h1 {
 .checkbox input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  border: 1.5px solid var(--slate-300);
-  border-radius: 4px;
   cursor: pointer;
   accent-color: var(--blue);
   flex-shrink: 0;
