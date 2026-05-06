@@ -106,16 +106,18 @@ class CalculadoraInvestimentos {
 
     calcularInfluenciaMensal(invInicial, invMens, meses, taxa, sweetspotMes) {
         const percentuais = [];
-        let montanteAnterior = invInicial;
+        let montante = invInicial;
         for (let i = 1; i <= meses; i++) {
-            const influenciaIsolada = montanteAnterior > 0
-                ? (invMens / montanteAnterior) * 100
+            montante = montante * (1 + taxa) + invMens;
+            // rendimento/aporte: quanto o rendimento mensal representa do aporte.
+            // Cruza 100% exatamente no sweetspot (onde montante * taxa >= invMens).
+            const rendimentoVsAporte = (taxa > 0 && invMens > 0)
+                ? (montante * taxa / invMens) * 100
                 : 0;
             percentuais.push({
-                isolada: influenciaIsolada,
+                rendimentoVsAporte,
                 isSweetspot: i === sweetspotMes,
             });
-            montanteAnterior = montanteAnterior * (1 + taxa) + invMens;
         }
         return percentuais;
     }
@@ -265,7 +267,7 @@ class CalculadoraInvestimentos {
             <tr>
                 <th>Ano</th>
                 <th>Mês</th>
-                <th>Influência do Aporte</th>
+                <th>Rendimento / Aporte</th>
             </tr>
         `;
 
@@ -278,7 +280,7 @@ class CalculadoraInvestimentos {
             row.innerHTML = `
                 <td>${ano}º</td>
                 <td>${mes}º</td>
-                <td>${perc.isolada.toFixed(2)}%${perc.isSweetspot ? ' 🎯' : ''}</td>
+                <td>${perc.rendimentoVsAporte.toFixed(1)}%${perc.isSweetspot ? ' 🎯' : ''}</td>
             `;
             table.appendChild(row);
         });
@@ -531,6 +533,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 c.style.display = c.id === tab.dataset.tab ? 'flex' : 'none';
             });
         });
+    });
+
+    const themeToggle = document.getElementById('themeToggle');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const savedTheme  = localStorage.getItem('theme') || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+    themeToggle.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        themeToggle.textContent = next === 'dark' ? '☀️' : '🌙';
     });
 
     calculadoraInv.calcular();
